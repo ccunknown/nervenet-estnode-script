@@ -12,7 +12,7 @@ RESULT=""
 function validate {
   DATA=$1
   # REGEX="^[0-9]+ flash [0-9]+,[AS],[0-9/]+,[0-9\:]+,.+$"
-  REGEX_A="^[0-9]+ flash [0-9]+,A,[0-9/]+,[0-9\:]+,7,[0-9]+(,-?[0-9]+(\.[0-9]+)?)+$"
+  REGEX_A="^[0-9]+ flash [0-9]+,A,[0-9/]+,[0-9\:]+,[0-9]+,[0-9]+(,-?[0-9]+(\.[0-9]+)?)+$"
   REGEX_S="^[0-9]+ flash [0-9]+,S,[0-9/]+,[0-9\:]+,.+$"
   REGEX_END="^[0-9]+ flash log view ready"
   # echo "$DATA" | tr -d '\r' | od -c
@@ -28,10 +28,11 @@ function validate {
   fi
 }
 
-# echo $CMD
+#echo $CMD
 
 for (( i=0 ; i < $RETRY ; i++ ))
 do
+  RESULT=""
   QUERY=`$DIR/cmd.sh "$CMD" "$PORT"`
   # echo "$QUERY"
   # echo "$QUERY" | od -c
@@ -41,6 +42,7 @@ do
     VALID=`validate "$LINE"`
     # echo $VALID
     if [ "$VALID" == "invalid" ]; then
+      # echo $LINE
       break
     elif [ "$VALID" == "valid" ]; then
       if [ -z "$RESULT" ]; then

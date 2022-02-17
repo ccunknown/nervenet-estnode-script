@@ -18,7 +18,7 @@ CMD="$ route get_nid"
 
 for (( i=0 ; i < $RETRY ; i++ ))
 do
-  RESULT=`./estCmd.sh "$CMD" "$PORT"`
+  RESULT=`./cmd.sh "$CMD" "$PORT"`
   VALID=`validate "$RESULT"`
   echo $VALID
   if [ "$VALID" == "valid" ]; then

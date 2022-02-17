@@ -63,21 +63,34 @@ function readLog {
     local ARR=("$DIFF" "$READ_BACK_MAX")
   else
     echo "not found 'LAST_INDEX'"
-    local ARR=("$READ_BACK_START" "$READ_BACK_MAX")
+    local ARR=("$READ_BACK_START")
   fi
 
   # Get the lowest number to be number to read.
   local IFS=$'\n'
-  local READ_BACK=`echo "${ARR[*]}" | sort -nr | tail -n1`
-  echo "Read numbers: $READ_BACK"
+  local NUM_TO_READ=`echo "${ARR[*]}" | sort -nr | tail -n1`
+  echo "Numbers to read: $NUM_TO_READ"
 
   # Write CURRENT_WRITE_INDEX to file as LAST_INDEX.
   local LAST_INDEX="$CURRENT_WRITE_INDEX"
   saveParam "LAST_INDEX" "$LAST_INDEX"
 
-  # Read 'log view'.
-  DATA=`$DIR/estCmd/logView.sh $PORT $CURRENT_WRITE_INDEX $READ_BACK`
+  # Calculate start index to read.
+  local START_INDEX=`expr $CURRENT_WRITE_INDEX - $NUM_TO_READ`
+  if [ "$START_INDEX" -lt 0 ]; then
+    START_INDEX=0
+  fi
+  echo "start index:" $START_INDEX
 
+  # Read 'log view'.
+  local READ_COMMAND="$DIR/estCmd/logView.sh $PORT $START_INDEX $NUM_TO_READ"
+  # local READ_COMMAND="./estCmd/logView.sh $PORT $START_INDEX $NUM_TO_READ"
+  echo "command: " $READ_COMMAND
+  #DATA=`eval $READ_COMMAND`
+  DATA=`$DIR/estCmd/logView.sh $PORT $START_INDEX $NUM_TO_READ`
+  #DATA=`./estCmd/logView.sh $PORT $START_INDEX $NUM_TO_READ`
+
+  echo "DATA:" $DATA
   # Write to the reference variable to send back to caller.
   REF="$DATA"
 }
