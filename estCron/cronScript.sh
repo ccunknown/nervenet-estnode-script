@@ -90,6 +90,25 @@ function readLog {
   DATA=`$DIR/estCmd/logView.sh $PORT $START_INDEX $NUM_TO_READ`
   #DATA=`./estCmd/logView.sh $PORT $START_INDEX $NUM_TO_READ`
 
+  # Short est message header for reduce data length.
+  if [ "$SHORT_EST_HEADER" -ne 0 ]; then
+    local SHORT=`echo "${DATA//,/ }" | grep -oP "[0-9]+ [AS] .+$"`
+    DATA="$SHORT"
+  fi
+
+  # Get ID_SLOT
+  if [[ $DATA ]] && [ "$ADD_ID_SLOT" -ne 0 ]; then
+    local ID_SLOT=`$DIR/getIdSlot.sh $FILE_RFLINK`
+    #local DATA_TMP=`printf $DATA`
+    local DATA_TMP=$DATA
+    echo "temp data:" $DATA_TMP
+    DATA=""
+    while read LINE; do
+      DATA=`printf "$DATA\n$ID_SLOT $LINE" | tr -d '\r'`
+    done <<< "$DATA_TMP"
+    #DATA=`echo $ID_SLOT $DATA`
+  fi
+
   echo "DATA:" $DATA
   # Write to the reference variable to send back to caller.
   REF="$DATA"
@@ -147,15 +166,8 @@ function main {
     echo "LOG: "
     echo "${LOG//,/ }"
 
-    # Cut LOG's static line header.
-    SHORT=`echo "${LOG//,/ }" | grep -oP "[0-9]+ [AS] .+$"`
-    local RESULT="$SHORT"
-
-    echo "RESULT: "
-    echo "$RESULT"
-
-    if [ -n "$DB_PATH" ] && [ -n "$RESULT" ]; then
-      INSERT=`$DIR/dbCmd/insert.sh "$DB_PATH" "$RESULT"`
+    if [ -n "$DB_PATH" ] && [ -n "$LOG" ]; then
+      INSERT=`$DIR/dbCmd/insert.sh "$DB_PATH" "$LOG"`
       echo "INSERT: "
       echo "$INSERT"
     fi

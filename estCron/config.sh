@@ -26,3 +26,7 @@ EST_SYMLINK_NAME="EstNode"
 FILE_RFLINK="/writable/etc/rflink-meshd.conf"
 FILE_RFLINK_0709="/writable/etc/rflink-meshd-0709.conf"
 LORA_SYMLINK_NAME="LoraRfLink"
+
+# Result options.
+ADD_ID_SLOT=1
+SHORT_EST_HEADER=1
