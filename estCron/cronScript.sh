@@ -104,7 +104,11 @@ function readLog {
     echo "temp data:" $DATA_TMP
     DATA=""
     while read LINE; do
-      DATA=`printf "$DATA\n$ID_SLOT $LINE" | tr -d '\r'`
+      if [ ${#DATA} -gt 0 ]; then
+        DATA=`printf "$DATA\n$ID_SLOT $LINE" | tr -d '\r'`
+      else
+        DATA=`printf "$ID_SLOT $LINE" | tr -d '\r'`
+      fi
     done <<< "$DATA_TMP"
     #DATA=`echo $ID_SLOT $DATA`
   fi
