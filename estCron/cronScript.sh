@@ -96,22 +96,40 @@ function readLog {
     DATA="$SHORT"
   fi
 
-  # Get ID_SLOT
-  if [[ $DATA ]] && [ "$ADD_ID_SLOT" -ne 0 ]; then
-    local ID_SLOT=`$DIR/getIdSlot.sh $FILE_RFLINK`
+  # Get Node ID
+  if [[ $DATA ]] && [ "$ADD_NODE_ID" -ne 0 ]; then
+    local NODE_ID=`$DIR/getNodeId.sh $FILE_NN_CONFIG`
     #local DATA_TMP=`printf $DATA`
     local DATA_TMP=$DATA
     echo "temp data:" $DATA_TMP
     DATA=""
     while read LINE; do
       if [ ${#DATA} -gt 0 ]; then
-        DATA=`printf "$DATA\n$ID_SLOT $LINE" | tr -d '\r'`
+        DATA=`printf "$DATA\n$NODE_ID $LINE" | tr -d '\r'`
       else
-        DATA=`printf "$ID_SLOT $LINE" | tr -d '\r'`
+        DATA=`printf "$NODE_ID $LINE" | tr -d '\r'`
       fi
     done <<< "$DATA_TMP"
-    #DATA=`echo $ID_SLOT $DATA`
+    #DATA=`echo $NODE_ID $DATA`
   fi
+
+
+#  # Get ID_SLOT
+#  if [[ $DATA ]] && [ "$ADD_ID_SLOT" -ne 0 ]; then
+#    local ID_SLOT=`$DIR/getIdSlot.sh $FILE_RFLINK`
+#    #local DATA_TMP=`printf $DATA`
+#    local DATA_TMP=$DATA
+#    echo "temp data:" $DATA_TMP
+#    DATA=""
+#    while read LINE; do
+#      if [ ${#DATA} -gt 0 ]; then
+#        DATA=`printf "$DATA\n$ID_SLOT $LINE" | tr -d '\r'`
+#      else
+#        DATA=`printf "$ID_SLOT $LINE" | tr -d '\r'`
+#      fi
+#    done <<< "$DATA_TMP"
+#    #DATA=`echo $ID_SLOT $DATA`
+#  fi
 
   echo "DATA:" $DATA
   # Write to the reference variable to send back to caller.

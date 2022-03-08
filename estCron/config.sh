@@ -25,8 +25,10 @@ EST_SYMLINK_NAME="EstNode"
 # NerveNet setup parameter.
 FILE_RFLINK="/writable/etc/rflink-meshd.conf"
 FILE_RFLINK_0709="/writable/etc/rflink-meshd-0709.conf"
+FILE_NN_CONFIG="/writable/etc/node.conf"
 LORA_SYMLINK_NAME="LoraRfLink"
 
 # Result options.
 ADD_ID_SLOT=1
+ADD_NODE_ID=1
 SHORT_EST_HEADER=1
