@@ -96,40 +96,61 @@ function readLog {
     DATA="$SHORT"
   fi
 
-  # Get Node ID
-  if [[ $DATA ]] && [ "$ADD_NODE_ID" -ne 0 ]; then
+  # Data options processor.
+  if [[ $DATA ]]; then
     local NODE_ID=`$DIR/getNodeId.sh $FILE_NN_CONFIG`
-    #local DATA_TMP=`printf $DATA`
-    local DATA_TMP=$DATA
-    echo "temp data:" $DATA_TMP
+    local DATA_TMP=`printf "$DATA" | tr -d '\r' | sed -r '/^\s*$/d'`
+    local LINE_DATA=""
+    if getParam "RECORD_COUNTER"; then
+      RECORD_COUNTER=`echo "$RECORD_COUNTER"`
+    else
+      RECORD_COUNTER="-1"
+    fi
+    # echo "temp data:" $DATA_TMP
     DATA=""
     while read LINE; do
-      if [ ${#DATA} -gt 0 ]; then
-        DATA=`printf "$DATA\n$NODE_ID $LINE" | tr -d '\r'`
-      else
-        DATA=`printf "$NODE_ID $LINE" | tr -d '\r'`
+      # echo "LINE: $LINE"
+      LINE_DATA=`printf "$LINE" | tr -d '\r'`
+
+      if [ "$ADD_COUNTER" -ne 0 ]; then
+        while [ ${#RECORD_COUNTER} -lt 2 ]; do
+          RECORD_COUNTER=`echo "0$RECORD_COUNTER"`
+        done
+        LINE_DATA=`printf -- "$RECORD_COUNTER $LINE_DATA" | tr -d '\r'`
+        RECORD_COUNTER=`echo "$((($RECORD_COUNTER + 1) % 100))"`
       fi
+
+      if [ "$ADD_NODE_ID" -ne 0 ]; then
+        LINE_DATA=`printf "$NODE_ID $LINE_DATA" | tr -d '\r'`
+      fi
+
+      if [ ${#DATA} -gt 0 ]; then
+        DATA=`printf "$DATA\n$LINE_DATA" | tr -d '\r'`
+      else
+        DATA=`printf "$LINE_DATA" | tr -d '\r'`
+      fi
+      # echo "current DATA: $DATA"
     done <<< "$DATA_TMP"
     #DATA=`echo $NODE_ID $DATA`
+    saveParam "RECORD_COUNTER" "$RECORD_COUNTER"
   fi
 
-
-#  # Get ID_SLOT
-#  if [[ $DATA ]] && [ "$ADD_ID_SLOT" -ne 0 ]; then
-#    local ID_SLOT=`$DIR/getIdSlot.sh $FILE_RFLINK`
-#    #local DATA_TMP=`printf $DATA`
-#    local DATA_TMP=$DATA
-#    echo "temp data:" $DATA_TMP
-#    DATA=""
-#    while read LINE; do
-#      if [ ${#DATA} -gt 0 ]; then
-#        DATA=`printf "$DATA\n$ID_SLOT $LINE" | tr -d '\r'`
-#      else
-#        DATA=`printf "$ID_SLOT $LINE" | tr -d '\r'`
-#      fi
-#    done <<< "$DATA_TMP"
-#    #DATA=`echo $ID_SLOT $DATA`
-#  fi
+  # Get Node ID
+  # if [[ $DATA ]] && [ "$ADD_NODE_ID" -ne 0 ]; then
+  #   local NODE_ID=`$DIR/getNodeId.sh $FILE_NN_CONFIG`
+  #   #local DATA_TMP=`printf $DATA`
+  #   local DATA_TMP=$DATA
+  #   echo "temp data:" $DATA_TMP
+  #   DATA=""
+  #   while read LINE; do
+  #     if [ ${#DATA} -gt 0 ]; then
+  #       DATA=`printf "$DATA\n$NODE_ID $LINE" | tr -d '\r'`
+  #     else
+  #       DATA=`printf "$NODE_ID $LINE" | tr -d '\r'`
+  #     fi
+  #   done <<< "$DATA_TMP"
+  #   #DATA=`echo $NODE_ID $DATA`
+  # fi
 
   echo "DATA:" $DATA
   # Write to the reference variable to send back to caller.
@@ -160,7 +181,7 @@ function setCron {
   if [ ! -f $CRON_PATH ]; then
     echo "Cron file not set, creating cron file ..."
     SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/cronScript.sh"
-    RETURNED=`echo "* * * * * $CRON_USER $SCRIPTPATH" > "$CRON_PATH"`
+    RETURNED=`echo "$CRON_EXPRESSION $CRON_USER $SCRIPTPATH" > "$CRON_PATH"`
     if [ -z $RETURNED ]; then
       cat $CRON_PATH
       echo "Cron file created, please restart machine."
@@ -179,8 +200,8 @@ function main {
   # setupPort "$USB_DEVICE_NAME" PORT
   if setCron; then
     echo ""
-  elif checkStation; then
-    echo "No station available."
+  # elif checkStation; then
+  #   echo "No station available."
   elif setupPort "$USB_DEVICE_NAME" PORT; then
     local LOG=""
     echo "main PORT: $PORT"
@@ -205,5 +226,6 @@ source $CONFIG_PATH
 # source ./config.sh
 
 main "$@"
+
 
 
